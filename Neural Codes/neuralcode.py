@@ -489,36 +489,36 @@ class NeuralCode:
         """
         if (algorithm == "iterative"):
             # Compute canonical form using iterative algorithm
-            init_code = self.Codes[0]
-            canonical = [(self.x[i] - Integer(init_code[i])) for i in range(self.d)]
-            for i in range(1, len(self.Codes)):
-                current_code = self.Codes[i]
-                code_coordinate = [Integer(neuron) for neuron in current_code]
-                factors = [(self.x[i] - code_coordinate[i]) for i in range(self.d)]
-                generators = canonical
-                M = []
-                N = []
-                L = []
-                for generator in generators:
-                    if generator(code_coordinate) == 0:
-                        M.append(generator)
-                    else:
-                        N.append(generator)
-                for generator in N:
-                    for factor in factors:
-                        goToNext = False
-                        g = generator * factor
-                        if generator.quo_rem(factor - 1)[1] == 0:
-                            continue
-                        for m_generator in M:
-                            if g.quo_rem(m_generator)[1] == 0:
-                                goToNext = True
-                                break
-                        if goToNext:
-                            continue
-                        L.append(g)
-                canonical = M + L
-            return self.F.ideal(canonical)
+            # init_code = self.Codes[0]
+            # canonical = [(self.x[i] - Integer(init_code[i])) for i in range(self.d)]
+            # for i in range(1, len(self.Codes)):
+            #     current_code = self.Codes[i]
+            #     code_coordinate = [Integer(neuron) for neuron in current_code]
+            #     factors = [(self.x[i] - code_coordinate[i]) for i in range(self.d)]
+            #     generators = canonical
+            #     M = []
+            #     N = []
+            #     L = []
+            #     for generator in generators:
+            #         if generator(code_coordinate) == 0:
+            #             M.append(generator)
+            #         else:
+            #             N.append(generator)
+            #     for generator in N:
+            #         for factor in factors:
+            #             goToNext = False
+            #             g = generator * factor
+            #             if generator.quo_rem(factor - 1)[1] == 0:
+            #                 continue
+            #             for m_generator in M:
+            #                 if g.quo_rem(m_generator)[1] == 0:
+            #                     goToNext = True
+            #                     break
+            #             if goToNext:
+            #                 continue
+            #             L.append(g)
+            #     canonical = M + L
+            return iterate_canonical(self.Codes, self.F)
         else:
             # condition for when Groebner = Canonical
             if len(self.Codes) == 1 or len(self.Codes) == (2**self.d - 1) or is_simplicial(self.Codes):
