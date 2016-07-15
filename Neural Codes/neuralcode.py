@@ -800,13 +800,14 @@ def assert_build(algorithm="usual", decomposition_algorithm="pm"):
                     print "Build failed on Neural Code " + str(all_paper[i]) + " Expected: " + str(expected_ideals[i]) + " but was " + str(gens) + ". Decomposition = " + decomp_algs[k] + "\n"
                     break
                 
-def generate_random_code(dimension):
+def generate_random_code(dimension, num_code_words=None):
     r"""
     Generates a random list of binary strings (code words) in the specified dimension.
 
     INPUT:
 
     - ``dimension`` -- integer the dimension of the boolean ring (the length of the binary strings).
+    - ``num_code_words`` -- optional integer the number of code words.
 
     OUTPUT:
 
@@ -819,9 +820,10 @@ def generate_random_code(dimension):
     
     all_combinations = ["".join(x) for x in itertools.product("01", repeat=dimension)]      # generates all possible combinations of 0 and 1 of length dimension
     code_words = []
-    random_size = randint(1, 2 ** dimension)
+    if num_code_words is None:
+        num_code_words = randint(1, 2 ** dimension)
     
-    while len(code_words) != random_size:
+    while len(code_words) != num_code_words:
         code_words.append(all_combinations[randint(0, 2 ** dimension - 1)])                 # randomly select from all combinations and add to code words
         code_words = Set(code_words).list()
     return code_words
