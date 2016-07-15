@@ -27,7 +27,7 @@ EXAMPLES::
 The software's main purpose is to compute canonical forms of neural ideals, and we'll begin with this example::
     
     sage: code = NeuralCode(['001','010','110'])
-    sage: code.get_canonical()
+    sage: code.canonical()
     Ideal (x1*x2, x0*x1 + x0, x1*x2 + x1 + x2 + 1, x0*x2) of Multivariate Polynomial Ring in x0, x1, x2 over Finite Field of size 2
     
 To read RF structures, it's easiest when the generators of the canonical form are factored::
@@ -63,8 +63,8 @@ Computing the universal groebner basis in the boolean ring::
 In constructing a neural code object, there are two arguments: the neural code, and an optional argument that is the term order. This term order will be used in the ring where
 all member methods do computation. For example, if we change the order to 'degrevlex', get_groebner_basis() will compute the groebner basis with that term order. 
 
-Additionally, the get_canonical() method also takes optional arguments. The first will determine which algorithm will be used to compute the canonical form. Either the iterative algorithm outlined by Dr. Carina Curto and Dr. Nora Young in "Neural ring homomorphisms and maps between neural codes" will be used or their algorithm in "The Neural Ring" will be chosen. The second will determine which algorithm to use for a primary decomposition step: 'pm' will use the pseudo-monomial algorithm, 'sy' and 'gtz' will  use the shimoyama-yokoyama algorithm or gianni-trager-zacharias algorithm, respectively. We also noticed that the get_canonical() runtime begins to rise significantly with higher dimension and more code words. To partially address this, we have parallelized portions of the algorithm used to get the canonical form. To take advantage of this, we use optional arguments::
-    sage: code.get_canonical('pm', True, 3)
+Additionally, the canonical() method also takes optional arguments. The first will determine which algorithm will be used to compute the canonical form. Either the iterative algorithm outlined by Dr. Carina Curto and Dr. Nora Young in "Neural ring homomorphisms and maps between neural codes" will be used or their algorithm in "The Neural Ring" will be chosen. The second will determine which algorithm to use for a primary decomposition step: 'pm' will use the pseudo-monomial algorithm, 'sy' and 'gtz' will  use the shimoyama-yokoyama algorithm or gianni-trager-zacharias algorithm, respectively. We also noticed that the canonical() runtime begins to rise significantly with higher dimension and more code words. To partially address this, we have parallelized portions of the algorithm used to get the canonical form. To take advantage of this, we use optional arguments::
+    sage: code.canonical('pm', True, 3)
     Ideal (x1*x2, x0*x1 + x0, x1*x2 + x1 + x2 + 1, x0*x2) of Multivariate Polynomial Ring in x0, x1, x2 over Finite Field of size 2
     
 The second argument is a boolean: True if we want to use parallelized portions, False if we don't. The third argument is for the number of parallel processes.
@@ -118,7 +118,7 @@ Building upon that, generate_random_tests(number of tests, dimension) will run "
     
 Now, all of these tests use a method called compare_groebner_canonical(gb, cf) which will return a list where the first element is a boolean indicating whether the groebner basis and canonical form equal::
     sage: gb = code.get_groebner_basis()
-    sage: cf = code.get_canonical()
+    sage: cf = code.canonical()
     sage: compare_groebner_canonical(gb, cf)
     [False, {x1 + x2 + 1, x0*x2}, {x1*x2, x0*x1 + x0, x1*x2 + x1 + x2 + 1, x0*x2}]
     
@@ -130,7 +130,7 @@ Used in is_simplicial(C), support(C) will return the support of a single codewor
     sage: support('0100011110101')
     [1, 5, 6, 7, 8, 10, 12]
 
-There is also a test suite, assert_build(), which tests whether get_canonical() will reproduce the results in "The Neural Ring". This method will print an error message if there is an inconsistency.
+There is also a test suite, assert_build(), which tests whether canonical() will reproduce the results in "The Neural Ring". This method will print an error message if there is an inconsistency.
 """
 
 #*****************************************************************************
@@ -174,7 +174,7 @@ class NeuralCode:
         EXAMPLES:
 
             sage: neural_code = NeuralCode(['000','011'])
-            sage: neural_code.get_canonical()
+            sage: neural_code.canonical()
                   Ideal (x1*x2 + x1, x1*x2 + x2, x0) of Multivariate Polynomial Ring in
                   x0, x1, x2 over Finite Field of size 2
         """
@@ -442,14 +442,14 @@ class NeuralCode:
 
         """
         a=[]
-        if(self.get_canonical() == "Empty"):
+        if(self.canonical() == "Empty"):
             return "Empty"
-        m=self.get_canonical(algorithm, decomposition_algorithm).gens()
+        m=self.canonical(algorithm, decomposition_algorithm).gens()
         for i in range(len(m)):
             a.append(m[i].factor())
         return a
                          
-    def get_canonical(self, algorithm = "iterative", decomposition_algorithm = "pm", threading=False, threads = 2):
+    def canonical(self, algorithm = "iterative", decomposition_algorithm = "pm", threading=False, threads = 2):
         r"""
         Return the canonical form of the neural code's ideal.
 
@@ -470,7 +470,7 @@ class NeuralCode:
         EXAMPLES:
             sage: C = ['000111','101010','111000','111001','100110']
             sage: nr = NeuralCode(C)
-            sage: nr.get_canonical()
+            sage: nr.canonical()
             Ideal (x0*x1 + x1, x1*x2*x5 + x2*x5, x1*x3, x2*x3 + x2 + x3 + 1, x0*x2 + x2, x0*x3*x5, x3*x4*x5 + x4*x5, x2*x3, x0*x4*x5, x2*x4 + x2 + x4 + 1, x1*x3*x5 + x1*x5 + x3*x5 + x5, x0*x4 + x0 + x4 + 1, x1*x2 + x1, x1*x4 + x1 + x4 + 1, x1*x4, x0*x1*x5 + x0*x5, x0*x2*x5 + x0*x5, x3*x4 + x3, x0*x3 + x0 + x3 + 1, x0*x5 + x0 + x5 + 1, x2*x4*x5) of Multivariate Polynomial Ring in x0, x1, x2, x3, x4, x5 over Finite Field of size 2
             
 
@@ -482,8 +482,8 @@ class NeuralCode:
 
         >>> C = ['000111','101010','111000','111001','100110']
         >>> nr = NeuralCode(C)
-        >>> expected = nr.get_canonical(algorithm="usual", decomposition_algorithm="gtz")
-        >>> iterative_canonical = nr.get_canonical(algorithm="iterative")
+        >>> expected = nr.canonical(algorithm="usual", decomposition_algorithm="gtz")
+        >>> iterative_canonical = nr.canonical(algorithm="iterative")
 	>>> expected == iterative_canonical
 	True
         """
@@ -781,7 +781,7 @@ def assert_build(algorithm="usual", decomposition_algorithm="pm"):
 
     for i in range(len(all_paper)):
             neural_ideal = NeuralCode(all_paper[i])
-            canonical_form = neural_ideal.get_canonical(algorithm, decomposition_algorithm)
+            canonical_form = neural_ideal.canonical(algorithm, decomposition_algorithm)
 
             if (canonical_form == "Empty" and expected_ideals[i] == [0]):
                 continue
@@ -907,7 +907,7 @@ def compare_all_canonical_groebner(dimension):
     
     for i in range(1, len(all_codes)):
         neural_ideal = NeuralCode(all_codes[i])
-        canonical_form = neural_ideal.get_canonical()
+        canonical_form = neural_ideal.canonical()
         if(canonical_form == "Empty" or canonical_form.gens() == [0]):
             continue
         groebner = neural_ideal.get_groebner_basis()
@@ -973,7 +973,7 @@ def compare_groebner_canonical(groebner, canonical):
         sage: c = ['0101','0110','1000','0001']
         sage: nc = NeuralCode(c)
         sage: gb = nc.get_groebner_basis()
-        sage: cf = nc.get_canonical()
+        sage: cf = nc.canonical()
         sage: compare_groebner_canonical(gb, cf)
         [False, {x1*x2 + x2, x1*x3 + x1 + x2, x0 + x2 + x3 + 1, x2*x3}, {x0*x1*x3 + x0*x1 + x0*x3 + x0 + x1*x3 + x1 + x3 + 1, x0*x2*x3 + x0*x2 + x0*x3 + x0 + x2*x3 + x2 + x3 + 1, x0*x1, x0*x2, x0*x3, x1*x2 + x2, x1*x2*x3 + x1*x2 + x1*x3 + x1, x2*x3}]
     
@@ -1068,7 +1068,7 @@ def generate_random_tests(num_of_tests, dimension = randint(2, 20)):
     
     for i in range(len(all_codes)):
         neural_ideal = NeuralCode(all_codes[i])
-        canonical_form = neural_ideal.get_canonical()
+        canonical_form = neural_ideal.canonical()
         if(canonical_form == "Empty"):
             continue
         universal_groebner = neural_ideal.get_universal_groebner_basis()
