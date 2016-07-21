@@ -488,36 +488,6 @@ class NeuralCode:
 	True
         """
         if (algorithm == "iterative"):
-            # Compute canonical form using iterative algorithm
-            # init_code = self.Codes[0]
-            # canonical = [(self.x[i] - Integer(init_code[i])) for i in range(self.d)]
-            # for i in range(1, len(self.Codes)):
-            #     current_code = self.Codes[i]
-            #     code_coordinate = [Integer(neuron) for neuron in current_code]
-            #     factors = [(self.x[i] - code_coordinate[i]) for i in range(self.d)]
-            #     generators = canonical
-            #     M = []
-            #     N = []
-            #     L = []
-            #     for generator in generators:
-            #         if generator(code_coordinate) == 0:
-            #             M.append(generator)
-            #         else:
-            #             N.append(generator)
-            #     for generator in N:
-            #         for factor in factors:
-            #             goToNext = False
-            #             g = generator * factor
-            #             if generator.quo_rem(factor - 1)[1] == 0:
-            #                 continue
-            #             for m_generator in M:
-            #                 if g.quo_rem(m_generator)[1] == 0:
-            #                     goToNext = True
-            #                     break
-            #             if goToNext:
-            #                 continue
-            #             L.append(g)
-            #     canonical = M + L
             return iterate_canonical(self.Codes, self.F)
         else:
             # condition for when Groebner = Canonical
@@ -701,7 +671,7 @@ class NeuralCode:
             return "Empty"
         
         return self.F.ideal(reduced)
-                
+
     def get_canonical_RF_structure(self):
         r"""
         Prints the Receptive Field structure using the canonical form of the neural ideal.
@@ -748,7 +718,8 @@ class NeuralCode:
         r"""Returns a list of n-sized sublists of the given ideal's basis."""
         for i in xrange(0, len(ideal.gens()), n):
             yield ideal.gens()[i:i+n]
-            
+
+
 def assert_build(algorithm="usual", decomposition_algorithm="pm"):
     """  Asserts that the canonical form calculations give the same results as those in "The Neural Ring" by Curto et al. Used in doctests.  """
     
@@ -799,7 +770,8 @@ def assert_build(algorithm="usual", decomposition_algorithm="pm"):
                 if (gens[j] not in expected_ideals[i]):
                     print "Build failed on Neural Code " + str(all_paper[i]) + " Expected: " + str(expected_ideals[i]) + " but was " + str(gens) + ". Decomposition = " + decomp_algs[k] + "\n"
                     break
-                
+
+
 def generate_random_code(dimension, num_code_words=None):
     r"""
     Generates a random list of binary strings (code words) in the specified dimension.
@@ -817,16 +789,16 @@ def generate_random_code(dimension, num_code_words=None):
         sage: generate_random_code(5)
         ['10000', '10001', '01011', '11011', '10011', '10111', '11001', '11000', '01100', '11100', '11101', '11010', '01010', '00110', '00001', '00010', '00011', '00100']
     """
-    
     all_combinations = ["".join(x) for x in itertools.product("01", repeat=dimension)]      # generates all possible combinations of 0 and 1 of length dimension
     code_words = []
     if num_code_words is None:
         num_code_words = randint(1, 2 ** dimension)
-    
+
     while len(code_words) != num_code_words:
         code_words.append(all_combinations[randint(0, 2 ** dimension - 1)])                 # randomly select from all combinations and add to code words
         code_words = Set(code_words).list()
     return code_words
+
 
 def all_neural_codes(dimension):
     r"""
@@ -852,7 +824,8 @@ def all_neural_codes(dimension):
     """
     all = ["".join(x) for x in itertools.product("01", repeat=dimension)]
     return Combinations(all).list()
-    
+
+
 def compare_all_canonical_groebner(dimension):
     r"""
     Prints a comparison summary of the canonical form and universal groebner basis for each combination of code words.
@@ -1001,7 +974,8 @@ def compare_groebner_canonical(groebner, canonical):
     comparison.append(groebner)
     comparison.append(canon)
     return comparison
-    
+
+
 def generate_random_tests(num_of_tests, dimension = randint(2, 20)):
     """Generates comparisons of the canonical form and groebner basis for random code words.
     
@@ -1110,6 +1084,7 @@ def generate_random_tests(num_of_tests, dimension = randint(2, 20)):
     for i in range(len(equal_codes)): 
       print template.format(equal_codes[i], equal_groebner[i], equal_canonical[i])
 
+
 def support(C):
     r"""
     Return the support of the code word.
@@ -1140,6 +1115,7 @@ def support(C):
            support.append(i)
     return support
 
+
 def is_simplicial(C):
     r"""
     Returns a boolean determining if a list of code words is a simplicial code.
@@ -1157,7 +1133,7 @@ def is_simplicial(C):
         True
         sage: is_simplicial(['000','101','010','111'])
         False
-    
+
     TESTS:
 
     >>> is_simplicial(['00','01','10','11'])
@@ -1191,6 +1167,7 @@ def is_simplicial(C):
         return True
     return False
 
+
 def pm_primary_decomposition(IDEAL):
     #step 1 initialization step
     final = []
@@ -1208,7 +1185,6 @@ def pm_primary_decomposition(IDEAL):
     for m in range(len(P)):
         final.extend(get_reduced_primes_list(P, m))
     return final
-
 
 
 #Step 6: If one ideal contains the generators of another ideal in the list, then it is redundant since we are taking the intersection of these ideals. This command gets a list of the non redundant ideals
@@ -1231,7 +1207,6 @@ def get_reduced_primes_list(P, m):
     if contains == False:
         plist.append(P[m])
     return list(Set(plist))
-
 
 
 #steps 2-4
@@ -1274,7 +1249,6 @@ def get_D_Q(D, Q):
     return [D, Q]
 
 
-
 #checks if the generators of an ideal are linear by checking if they have only 1 factor
 def is_linear(ideal):
     boolean = True
@@ -1286,35 +1260,35 @@ def is_linear(ideal):
     return boolean
 
 
-
 #executes the reduction in step 3 for a given ideal and given z
 def get_reduced_ideal(z, I):
     L = []
     M = []
     N = []
-    
+
     #creates a list of non reduced generators 
     for j in range(len(I.gens())):
         L.append(I.gens()[j])
-        
+
     #implements the condition z = 0
     for j in range(len(L)):
         if z.divides(L[j]):
             continue
         else:
             M.append(L[j])
-    
+
     #implements the condition z+1 = 1
     for j in range(len(M)):
         if (z+1).divides(M[j]):
             N.append(M[j].quo_rem(z+1)[0])
         else:
             N.append(M[j])
-    
+
     #sorts list to avoid duplicates and returns the ideal generated by the list
     N.append(z)
     N_1 = sorted(N)
     return Ideal(N_1)
+
 
 if __name__ == "__main__":
     import doctest
